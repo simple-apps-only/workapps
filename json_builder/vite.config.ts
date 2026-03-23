@@ -3,6 +3,6 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  base: process.env.LOCAL_DEV ? './' : '/webapps/json_builder/',
+  base: process.env.LOCAL_DEV ? './' : '/workapps/json_builder/',
   plugins: [react(), tailwindcss()],
 })
