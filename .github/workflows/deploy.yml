@@ -36,12 +36,19 @@ jobs:
           npm ci
           npm run build
 
+      - name: Build log_viewer
+        working-directory: log_viewer
+        run: |
+          npm ci
+          npm run build
+
       - name: Assemble site
         run: |
-          mkdir -p _site/json_builder _site/list_creator
+          mkdir -p _site/json_builder _site/list_creator _site/log_viewer
           cp index.html _site/
           cp -r json_builder/dist/* _site/json_builder/
           cp -r list_creator/dist/* _site/list_creator/
+          cp -r log_viewer/dist/* _site/log_viewer/
 
       - uses: actions/upload-pages-artifact@v3
 
