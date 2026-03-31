@@ -1,4 +1,6 @@
 import type { ConverterInfo } from '../types';
+import { csvConverter } from './csv';
+import { tsvConverter } from './tsv';
 import { jsonConverter } from './json';
 import { powershellConverter } from './powershell';
 import { sqlInConverter, sqlInsertConverter, sqlValuesConverter } from './sql';
@@ -11,6 +13,8 @@ import { xmlConverter } from './xml';
 import { dosConverter } from './dos';
 
 export const converters: ConverterInfo[] = [
+  csvConverter,
+  tsvConverter,
   jsonConverter,
   powershellConverter,
   sqlInConverter,
