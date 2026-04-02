@@ -21,3 +21,7 @@ export type Delimiter = ',' | '\t' | '|' | string;
 export type FilterColumn = number | 'any';
 
 export type FilterMode = 'exclude' | 'include';
+
+export type SortDirection = 'asc' | 'desc';
+
+export type SortColumn = number | null;

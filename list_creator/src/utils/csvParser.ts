@@ -1,4 +1,4 @@
-import type { ParsedData, Delimiter, FilterColumn, FilterMode } from '../types';
+import type { ParsedData, Delimiter, FilterColumn, FilterMode, SortColumn, SortDirection } from '../types';
 
 const DELIMITER_CANDIDATES: Delimiter[] = [',', '\t', '|', ';'];
 
@@ -123,4 +123,32 @@ export function filterRows(
   });
 
   return { ...data, rows: filteredRows };
+}
+
+export function sortRows(
+  data: ParsedData,
+  sortColumn: SortColumn,
+  sortDirection: SortDirection
+): ParsedData {
+  if (sortColumn === null) return data;
+
+  const sortedRows = [...data.rows].sort((a, b) => {
+    const aVal = a[sortColumn] ?? '';
+    const bVal = b[sortColumn] ?? '';
+
+    const aNum = parseFloat(aVal);
+    const bNum = parseFloat(bVal);
+    const bothNumeric = !isNaN(aNum) && !isNaN(bNum);
+
+    let comparison: number;
+    if (bothNumeric) {
+      comparison = aNum - bNum;
+    } else {
+      comparison = aVal.localeCompare(bVal, undefined, { sensitivity: 'base' });
+    }
+
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
+
+  return { ...data, rows: sortedRows };
 }
