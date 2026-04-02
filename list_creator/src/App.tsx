@@ -2,14 +2,15 @@ import { useState, useMemo, useEffect } from 'react';
 import CsvInput from './components/CsvInput';
 import ColumnSelector from './components/ColumnSelector';
 import RowFilter from './components/RowFilter';
+import SortControl from './components/SortControl';
 import ParsedPreview from './components/ParsedPreview';
 import FormatSelector from './components/FormatSelector';
 import OutputDisplay from './components/OutputDisplay';
 import ThemeSelector from './components/ThemeSelector';
-import { parseCSV, detectDelimiter, filterColumns, filterRows } from './utils/csvParser';
+import { parseCSV, detectDelimiter, filterColumns, filterRows, sortRows } from './utils/csvParser';
 import { converters } from './converters';
 import { themes, applyTheme, getStoredThemeId, storeThemeId, type Theme } from './themes';
-import type { Delimiter, FilterColumn, FilterMode } from './types';
+import type { Delimiter, FilterColumn, FilterMode, SortColumn, SortDirection } from './types';
 
 export default function App() {
   const [rawText, setRawText] = useState('');
@@ -20,6 +21,8 @@ export default function App() {
   const [filterValues, setFilterValues] = useState<string[]>([]);
   const [filterColumn, setFilterColumn] = useState<FilterColumn>('any');
   const [filterMode, setFilterMode] = useState<FilterMode>('exclude');
+  const [sortColumn, setSortColumn] = useState<SortColumn>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [theme, setTheme] = useState<Theme>(() => {
     const storedId = getStoredThemeId();
     return themes.find((t) => t.id === storedId) || themes[0];
@@ -47,12 +50,17 @@ export default function App() {
     [parsed, selectedColumns]
   );
 
-  const finalData = useMemo(
+  const rowFilteredData = useMemo(
     () => filterRows(columnFilteredData, filterValues, filterColumn, filterMode),
     [columnFilteredData, filterValues, filterColumn, filterMode]
   );
 
-  const affectedCount = columnFilteredData.rows.length - finalData.rows.length;
+  const affectedCount = columnFilteredData.rows.length - rowFilteredData.rows.length;
+
+  const finalData = useMemo(
+    () => sortRows(rowFilteredData, sortColumn, sortDirection),
+    [rowFilteredData, sortColumn, sortDirection]
+  );
 
   const converter = converters.find((c) => c.id === selectedFormat) ?? converters[0];
 
@@ -115,18 +123,29 @@ export default function App() {
         )}
 
         {parsed.rows.length > 0 && (
-          <section>
-            <RowFilter
-              headers={columnFilteredData.headers}
-              filterValues={filterValues}
-              onFilterValuesChange={setFilterValues}
-              filterColumn={filterColumn}
-              onFilterColumnChange={setFilterColumn}
-              filterMode={filterMode}
-              onFilterModeChange={setFilterMode}
-              affectedCount={Math.abs(affectedCount)}
-              totalRows={columnFilteredData.rows.length}
-            />
+          <section className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+            <div className="flex-1 min-w-0">
+              <RowFilter
+                headers={columnFilteredData.headers}
+                filterValues={filterValues}
+                onFilterValuesChange={setFilterValues}
+                filterColumn={filterColumn}
+                onFilterColumnChange={setFilterColumn}
+                filterMode={filterMode}
+                onFilterModeChange={setFilterMode}
+                affectedCount={Math.abs(affectedCount)}
+                totalRows={columnFilteredData.rows.length}
+              />
+            </div>
+            <div className="shrink-0">
+              <SortControl
+                headers={columnFilteredData.headers}
+                sortColumn={sortColumn}
+                onSortColumnChange={setSortColumn}
+                sortDirection={sortDirection}
+                onSortDirectionChange={setSortDirection}
+              />
+            </div>
           </section>
         )}
 
