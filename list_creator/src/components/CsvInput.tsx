@@ -77,11 +77,11 @@ export default function CsvInput({
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <label className="text-sm text-[--color-text-secondary]">Delimiter:</label>
+          <label className="text-sm text-[var(--color-text-secondary)]">Delimiter:</label>
           <select
             value={delimiter}
             onChange={(e) => onDelimiterChange(e.target.value as Delimiter)}
-            className="bg-[--color-bg-tertiary] border border-[--color-border] rounded px-2 py-1 text-sm text-[--color-text-primary] focus:border-[--color-border-focus] focus:outline-none"
+            className="bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded px-2 py-1 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-border-focus)] focus:outline-none"
           >
             {DELIMITER_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -90,16 +90,16 @@ export default function CsvInput({
             ))}
           </select>
         </div>
-        <label className="flex items-center gap-2 text-sm text-[--color-text-secondary] cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] cursor-pointer select-none">
           <input
             type="checkbox"
             checked={hasHeaders}
             onChange={(e) => onHasHeadersChange(e.target.checked)}
-            className="accent-[--color-accent] w-4 h-4"
+            className="accent-[var(--color-accent)] w-4 h-4"
           />
           First row is header
         </label>
-        <label className="ml-auto text-sm text-[--color-accent] cursor-pointer hover:text-[--color-accent-hover] transition-colors">
+        <label className="ml-auto text-sm text-[var(--color-accent)] cursor-pointer hover:text-[var(--color-accent-hover)] transition-colors">
           <span>Browse file...</span>
           <input
             type="file"
@@ -113,8 +113,8 @@ export default function CsvInput({
       <div
         className={`relative rounded border-2 border-dashed transition-colors ${
           isDragging
-            ? 'border-[--color-accent] bg-[--color-accent]/10'
-            : 'border-[--color-border] hover:border-[--color-text-muted]'
+            ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10'
+            : 'border-[var(--color-border)] hover:border-[var(--color-text-muted)]'
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -125,11 +125,11 @@ export default function CsvInput({
           onChange={(e) => onChange(e.target.value)}
           placeholder="Paste CSV data here, or drag & drop a .csv / .txt file..."
           spellCheck={false}
-          className="w-full h-64 bg-transparent font-mono text-sm p-3 text-[--color-text-primary] placeholder:text-[--color-text-muted] resize-y focus:outline-none"
+          className="w-full h-64 bg-transparent font-mono text-sm p-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] resize-y focus:outline-none"
         />
         {isDragging && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[--color-bg-primary]/80 rounded pointer-events-none">
-            <span className="text-[--color-accent] text-lg font-medium">
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-bg-primary)]/80 rounded pointer-events-none">
+            <span className="text-[var(--color-accent)] text-lg font-medium">
               Drop file here
             </span>
           </div>

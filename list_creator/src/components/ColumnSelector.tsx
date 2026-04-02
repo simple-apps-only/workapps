@@ -23,12 +23,12 @@ export default function ColumnSelector({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-[--color-text-secondary]">Columns:</span>
+        <span className="text-sm text-[var(--color-text-secondary)]">Columns:</span>
         <button
           onClick={() =>
             onChange(selected.map(() => !allSelected))
           }
-          className="text-xs text-[--color-accent] hover:text-[--color-accent-hover] transition-colors"
+          className="text-xs text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors"
         >
           {allSelected ? 'Deselect all' : 'Select all'}
         </button>
@@ -40,8 +40,8 @@ export default function ColumnSelector({
             onClick={() => toggle(i)}
             className={`px-3 py-1 rounded-full text-sm transition-colors border ${
               selected[i]
-                ? 'bg-[--color-accent] border-[--color-accent] text-white'
-                : 'bg-[--color-bg-tertiary] border-[--color-border] text-[--color-text-secondary] hover:border-[--color-text-muted]'
+                ? 'bg-[var(--color-accent)] border-[var(--color-accent)] text-white'
+                : 'bg-[var(--color-bg-tertiary)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-muted)]'
             }`}
           >
             {header}

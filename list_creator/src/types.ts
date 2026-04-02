@@ -17,3 +17,7 @@ export interface ConverterInfo {
 }
 
 export type Delimiter = ',' | '\t' | '|' | string;
+
+export type FilterColumn = number | 'any';
+
+export type FilterMode = 'exclude' | 'include';

@@ -16,18 +16,18 @@ export default function ParsedPreview({ data }: ParsedPreviewProps) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-[--color-text-secondary]">
+        <span className="text-sm text-[var(--color-text-secondary)]">
           Preview ({rows.length} row{rows.length !== 1 ? 's' : ''}, {headers.length} column{headers.length !== 1 ? 's' : ''})
         </span>
       </div>
-      <div className="overflow-x-auto border border-[--color-border] rounded">
+      <div className="overflow-x-auto border border-[var(--color-border)] rounded">
         <table className="w-full text-sm font-mono">
           <thead>
-            <tr className="bg-[--color-bg-tertiary]">
+            <tr className="bg-[var(--color-bg-tertiary)]">
               {headers.map((h, i) => (
                 <th
                   key={i}
-                  className="text-left px-3 py-1.5 text-[--color-syntax-blue] font-medium border-b border-[--color-border]"
+                  className="text-left px-3 py-1.5 text-[var(--color-syntax-blue)] font-medium border-b border-[var(--color-border)]"
                 >
                   {h}
                 </th>
@@ -38,10 +38,10 @@ export default function ParsedPreview({ data }: ParsedPreviewProps) {
             {displayRows.map((row, ri) => (
               <tr
                 key={ri}
-                className="border-b border-[--color-border] last:border-b-0 hover:bg-[--color-bg-hover] transition-colors"
+                className="border-b border-[var(--color-border)] last:border-b-0 hover:bg-[var(--color-bg-hover)] transition-colors"
               >
                 {row.map((cell, ci) => (
-                  <td key={ci} className="px-3 py-1.5 text-[--color-text-primary]">
+                  <td key={ci} className="px-3 py-1.5 text-[var(--color-text-primary)]">
                     {cell}
                   </td>
                 ))}
@@ -50,7 +50,7 @@ export default function ParsedPreview({ data }: ParsedPreviewProps) {
           </tbody>
         </table>
         {remaining > 0 && (
-          <div className="px-3 py-1.5 text-xs text-[--color-text-muted] bg-[--color-bg-tertiary] border-t border-[--color-border]">
+          <div className="px-3 py-1.5 text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] border-t border-[var(--color-border)]">
             ...and {remaining} more row{remaining !== 1 ? 's' : ''}
           </div>
         )}

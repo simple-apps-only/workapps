@@ -1,4 +1,4 @@
-import type { ParsedData, Delimiter } from '../types';
+import type { ParsedData, Delimiter, FilterColumn, FilterMode } from '../types';
 
 const DELIMITER_CANDIDATES: Delimiter[] = [',', '\t', '|', ';'];
 
@@ -97,4 +97,30 @@ export function filterColumns(
     rows: data.rows.map((row) => indices.map((i) => row[i] ?? '')),
     hasHeaders: data.hasHeaders,
   };
+}
+
+export function filterRows(
+  data: ParsedData,
+  filterValues: string[],
+  filterColumn: FilterColumn,
+  filterMode: FilterMode
+): ParsedData {
+  if (filterValues.length === 0) return data;
+
+  const normalizedValues = filterValues
+    .map((v) => v.toLowerCase().trim())
+    .filter((v) => v.length > 0);
+
+  if (normalizedValues.length === 0) return data;
+
+  const filteredRows = data.rows.filter((row) => {
+    const columnsToCheck =
+      filterColumn === 'any' ? row : [row[filterColumn] ?? ''];
+    const hasMatch = columnsToCheck.some((cell) =>
+      normalizedValues.includes(cell.toLowerCase().trim())
+    );
+    return filterMode === 'include' ? hasMatch : !hasMatch;
+  });
+
+  return { ...data, rows: filteredRows };
 }

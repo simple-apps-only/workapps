@@ -15,8 +15,8 @@ export default function FormatSelector({ selected, onChange }: FormatSelectorPro
           title={c.description}
           className={`px-3 py-1.5 text-sm rounded transition-colors ${
             selected === c.id
-              ? 'bg-[--color-accent] text-white'
-              : 'bg-[--color-bg-tertiary] text-[--color-text-secondary] hover:bg-[--color-bg-hover] hover:text-[--color-text-primary] border border-[--color-border]'
+              ? 'bg-[var(--color-accent)] text-white'
+              : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] hover:text-[var(--color-text-primary)] border border-[var(--color-border)]'
           }`}
         >
           {c.name}
