@@ -2,15 +2,16 @@ import { useState, useMemo, useEffect } from 'react';
 import CsvInput from './components/CsvInput';
 import ColumnSelector from './components/ColumnSelector';
 import RowFilter from './components/RowFilter';
+import DedupControl from './components/DedupControl';
 import SortControl from './components/SortControl';
 import ParsedPreview from './components/ParsedPreview';
 import FormatSelector from './components/FormatSelector';
 import OutputDisplay from './components/OutputDisplay';
 import ThemeSelector from './components/ThemeSelector';
-import { parseCSV, detectDelimiter, filterColumns, filterRows, sortRows } from './utils/csvParser';
+import { parseCSV, detectDelimiter, filterColumns, filterRows, dedupRows, sortRows } from './utils/csvParser';
 import { converters } from './converters';
 import { themes, applyTheme, getStoredThemeId, storeThemeId, type Theme } from './themes';
-import type { Delimiter, FilterColumn, FilterMode, SortColumn, SortDirection } from './types';
+import type { Delimiter, FilterColumn, FilterMode, SortColumn, SortDirection, DedupColumn, DedupMode, DedupEnabled } from './types';
 
 export default function App() {
   const [rawText, setRawText] = useState('');
@@ -23,6 +24,9 @@ export default function App() {
   const [filterMode, setFilterMode] = useState<FilterMode>('exclude');
   const [sortColumn, setSortColumn] = useState<SortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [dedupEnabled, setDedupEnabled] = useState<DedupEnabled>(false);
+  const [dedupColumn, setDedupColumn] = useState<DedupColumn>('all');
+  const [dedupMode, setDedupMode] = useState<DedupMode>('keep-first');
   const [theme, setTheme] = useState<Theme>(() => {
     const storedId = getStoredThemeId();
     return themes.find((t) => t.id === storedId) || themes[0];
@@ -57,9 +61,16 @@ export default function App() {
 
   const affectedCount = columnFilteredData.rows.length - rowFilteredData.rows.length;
 
+  const dedupedData = useMemo(
+    () => (dedupEnabled ? dedupRows(rowFilteredData, dedupColumn, dedupMode) : rowFilteredData),
+    [rowFilteredData, dedupEnabled, dedupColumn, dedupMode]
+  );
+
+  const removedDedupCount = rowFilteredData.rows.length - dedupedData.rows.length;
+
   const finalData = useMemo(
-    () => sortRows(rowFilteredData, sortColumn, sortDirection),
-    [rowFilteredData, sortColumn, sortDirection]
+    () => sortRows(dedupedData, sortColumn, sortDirection),
+    [dedupedData, sortColumn, sortDirection]
   );
 
   const converter = converters.find((c) => c.id === selectedFormat) ?? converters[0];
@@ -135,6 +146,19 @@ export default function App() {
                 onFilterModeChange={setFilterMode}
                 affectedCount={Math.abs(affectedCount)}
                 totalRows={columnFilteredData.rows.length}
+              />
+            </div>
+            <div className="shrink-0">
+              <DedupControl
+                headers={columnFilteredData.headers}
+                enabled={dedupEnabled}
+                onEnabledChange={setDedupEnabled}
+                dedupColumn={dedupColumn}
+                onDedupColumnChange={setDedupColumn}
+                dedupMode={dedupMode}
+                onDedupModeChange={setDedupMode}
+                removedCount={removedDedupCount}
+                totalRows={rowFilteredData.rows.length}
               />
             </div>
             <div className="shrink-0">

@@ -1,4 +1,4 @@
-import type { ParsedData, Delimiter, FilterColumn, FilterMode, SortColumn, SortDirection } from '../types';
+import type { ParsedData, Delimiter, FilterColumn, FilterMode, SortColumn, SortDirection, DedupColumn, DedupMode } from '../types';
 
 const DELIMITER_CANDIDATES: Delimiter[] = [',', '\t', '|', ';'];
 
@@ -151,4 +151,48 @@ export function sortRows(
   });
 
   return { ...data, rows: sortedRows };
+}
+
+export function dedupRows(
+  data: ParsedData,
+  dedupColumn: DedupColumn,
+  dedupMode: DedupMode
+): ParsedData {
+  if (dedupColumn === 'all') {
+    const seen = new Set<string>();
+    const deduped: string[][] = [];
+    const rows = dedupMode === 'keep-first' ? data.rows : [...data.rows].reverse();
+
+    for (const row of rows) {
+      const key = row.join('\x00');
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(row);
+      }
+    }
+
+    if (dedupMode === 'keep-last') {
+      deduped.reverse();
+    }
+
+    return { ...data, rows: deduped };
+  }
+
+  const seen = new Set<string>();
+  const deduped: string[][] = [];
+  const rows = dedupMode === 'keep-first' ? data.rows : [...data.rows].reverse();
+
+  for (const row of rows) {
+    const key = row[dedupColumn] ?? '';
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduped.push(row);
+    }
+  }
+
+  if (dedupMode === 'keep-last') {
+    deduped.reverse();
+  }
+
+  return { ...data, rows: deduped };
 }

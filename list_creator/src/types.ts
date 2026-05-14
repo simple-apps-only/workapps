@@ -25,3 +25,9 @@ export type FilterMode = 'exclude' | 'include';
 export type SortDirection = 'asc' | 'desc';
 
 export type SortColumn = number | null;
+
+export type DedupColumn = number | 'all';
+
+export type DedupMode = 'keep-first' | 'keep-last';
+
+export type DedupEnabled = boolean;

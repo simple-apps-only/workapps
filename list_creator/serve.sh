@@ -4,6 +4,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Ensure Node 20+ via nvm
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm use 2>/dev/null || { echo "ERROR: nvm not found or Node version in .nvmrc unavailable. Run: nvm install"; exit 1; }
+
 echo "=== CSV List Converter ==="
 echo ""
 
@@ -29,7 +34,8 @@ echo "  Size:    $TOTAL_SIZE"
 echo ""
 
 echo "[3/3] Starting local server..."
+echo "  URL:   http://localhost:3000"
 echo "  Press Ctrl+C to stop."
 echo ""
 
-npx --yes serve "$DIST"
+npx vite preview --port 3000
