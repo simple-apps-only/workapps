@@ -31,73 +31,87 @@ export default function DedupControl({
   const resultCount = totalRows - removedCount;
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-[var(--color-text-secondary)]">Deduplicate Rows</span>
-          <button
-            onClick={() => onEnabledChange(!enabled)}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-              enabled ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-bg-tertiary)]'
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm font-medium text-[var(--color-text-secondary)]">Deduplicate</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          aria-label={enabled ? 'Deduplication on. Collapse duplicate rows.' : 'Deduplication off. Keep all rows.'}
+          onClick={() => onEnabledChange(!enabled)}
+          className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-secondary)] ${
+            enabled ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-bg-tertiary)]'
+          }`}
+          title={
+            enabled
+              ? 'On — collapse duplicate rows'
+              : 'Off — keep all rows'
+          }
+        >
+          <span
+            className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+              enabled ? 'translate-x-6' : 'translate-x-1'
             }`}
-            title={enabled ? 'Deduplication enabled' : 'Deduplication disabled'}
-          >
-            <span
-              className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
-                enabled ? 'translate-x-4.5' : 'translate-x-0.5'
-              }`}
-            />
-          </button>
-        </div>
-        {enabled && removedCount > 0 && (
-          <span className="text-xs text-[var(--color-text-muted)]">
-            {removedCount} duplicate{removedCount !== 1 ? 's' : ''} removed
-            ({resultCount} row{resultCount !== 1 ? 's' : ''} remaining)
-          </span>
-        )}
+          />
+        </button>
       </div>
+      {enabled && removedCount > 0 && (
+        <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+          {removedCount} duplicate{removedCount !== 1 ? 's' : ''} removed · {resultCount} row
+          {resultCount !== 1 ? 's' : ''} remaining
+        </p>
+      )}
       {enabled && (
-        <>
-          <div className="flex items-center gap-3">
-            <label className="text-xs text-[var(--color-text-muted)]">Based on</label>
+        <div className="flex flex-col gap-3 pt-1 border-t border-[var(--color-border)]">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="dedup-column" className="text-xs text-[var(--color-text-muted)]">
+              Match duplicates by
+            </label>
             <select
+              id="dedup-column"
               value={dedupColumn === 'all' ? 'all' : dedupColumn.toString()}
               onChange={handleColumnChange}
-              className="px-2 py-1.5 rounded border border-[var(--color-border)] bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] text-sm focus:outline-none focus:border-[var(--color-border-focus)]"
+              className="w-full max-w-xs px-2 py-2 rounded border border-[var(--color-border)] bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] text-sm focus:outline-none focus:border-[var(--color-border-focus)]"
             >
-              <option value="all">All columns</option>
+              <option value="all">Entire row (all columns)</option>
               {headers.map((h, i) => (
                 <option key={i} value={i}>
-                  {h}
+                  Column: {h}
                 </option>
               ))}
             </select>
           </div>
-          <div className="flex rounded border border-[var(--color-border)] overflow-hidden w-fit">
-            <button
-              onClick={() => onDedupModeChange('keep-first')}
-              className={`px-2 py-0.5 text-xs transition-colors ${
-                dedupMode === 'keep-first'
-                  ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)]'
-                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-              title="Keep the first occurrence of each duplicate"
-            >
-              Keep first
-            </button>
-            <button
-              onClick={() => onDedupModeChange('keep-last')}
-              className={`px-2 py-0.5 text-xs transition-colors ${
-                dedupMode === 'keep-last'
-                  ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)]'
-                  : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              }`}
-              title="Keep the last occurrence of each duplicate"
-            >
-              Keep last
-            </button>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs text-[var(--color-text-muted)]">When duplicates exist</span>
+            <div className="flex rounded-lg border border-[var(--color-border)] overflow-hidden w-fit">
+              <button
+                type="button"
+                onClick={() => onDedupModeChange('keep-first')}
+                className={`px-3 py-1.5 text-xs transition-colors ${
+                  dedupMode === 'keep-first'
+                    ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)]'
+                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                }`}
+                title="Keep the first occurrence of each duplicate"
+              >
+                Keep first
+              </button>
+              <button
+                type="button"
+                onClick={() => onDedupModeChange('keep-last')}
+                className={`px-3 py-1.5 text-xs transition-colors ${
+                  dedupMode === 'keep-last'
+                    ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)]'
+                    : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                }`}
+                title="Keep the last occurrence of each duplicate"
+              >
+                Keep last
+              </button>
+            </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

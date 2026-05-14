@@ -27,6 +27,7 @@ export default function App() {
   const [dedupEnabled, setDedupEnabled] = useState<DedupEnabled>(false);
   const [dedupColumn, setDedupColumn] = useState<DedupColumn>('all');
   const [dedupMode, setDedupMode] = useState<DedupMode>('keep-first');
+  const [transformExpanded, setTransformExpanded] = useState(true);
   const [theme, setTheme] = useState<Theme>(() => {
     const storedId = getStoredThemeId();
     return themes.find((t) => t.id === storedId) || themes[0];
@@ -134,42 +135,87 @@ export default function App() {
         )}
 
         {parsed.rows.length > 0 && (
-          <section className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-            <div className="flex-1 min-w-0">
-              <RowFilter
-                headers={columnFilteredData.headers}
-                filterValues={filterValues}
-                onFilterValuesChange={setFilterValues}
-                filterColumn={filterColumn}
-                onFilterColumnChange={setFilterColumn}
-                filterMode={filterMode}
-                onFilterModeChange={setFilterMode}
-                affectedCount={Math.abs(affectedCount)}
-                totalRows={columnFilteredData.rows.length}
-              />
-            </div>
-            <div className="shrink-0">
-              <DedupControl
-                headers={columnFilteredData.headers}
-                enabled={dedupEnabled}
-                onEnabledChange={setDedupEnabled}
-                dedupColumn={dedupColumn}
-                onDedupColumnChange={setDedupColumn}
-                dedupMode={dedupMode}
-                onDedupModeChange={setDedupMode}
-                removedCount={removedDedupCount}
-                totalRows={rowFilteredData.rows.length}
-              />
-            </div>
-            <div className="shrink-0">
-              <SortControl
-                headers={columnFilteredData.headers}
-                sortColumn={sortColumn}
-                onSortColumnChange={setSortColumn}
-                sortDirection={sortDirection}
-                onSortDirectionChange={setSortDirection}
-              />
-            </div>
+          <section className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] overflow-hidden">
+            <button
+              type="button"
+              id="transform-heading"
+              aria-expanded={transformExpanded}
+              aria-controls="transform-panel"
+              onClick={() => setTransformExpanded((v) => !v)}
+              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-[var(--color-bg-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-border-focus)]"
+            >
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <span className="text-sm font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">
+                  Transform
+                </span>
+                {!transformExpanded && (
+                  <span className="text-xs text-[var(--color-text-muted)] truncate">
+                    {finalData.rows.length} row{finalData.rows.length !== 1 ? 's' : ''} in result · click to edit
+                  </span>
+                )}
+              </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden
+                className={`h-5 w-5 shrink-0 text-[var(--color-text-muted)] transition-transform duration-200 ${
+                  transformExpanded ? 'rotate-180' : ''
+                }`}
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+            {transformExpanded && (
+              <div
+                id="transform-panel"
+                role="region"
+                aria-labelledby="transform-heading"
+                className="border-t border-[var(--color-border)] p-4"
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+                  <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4 min-w-0 flex flex-col h-full">
+                    <RowFilter
+                      headers={columnFilteredData.headers}
+                      filterValues={filterValues}
+                      onFilterValuesChange={setFilterValues}
+                      filterColumn={filterColumn}
+                      onFilterColumnChange={setFilterColumn}
+                      filterMode={filterMode}
+                      onFilterModeChange={setFilterMode}
+                      affectedCount={Math.abs(affectedCount)}
+                      totalRows={columnFilteredData.rows.length}
+                    />
+                  </div>
+                  <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4 min-w-0 flex flex-col h-full">
+                    <DedupControl
+                      headers={columnFilteredData.headers}
+                      enabled={dedupEnabled}
+                      onEnabledChange={setDedupEnabled}
+                      dedupColumn={dedupColumn}
+                      onDedupColumnChange={setDedupColumn}
+                      dedupMode={dedupMode}
+                      onDedupModeChange={setDedupMode}
+                      removedCount={removedDedupCount}
+                      totalRows={rowFilteredData.rows.length}
+                    />
+                  </div>
+                  <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4 min-w-0 flex flex-col h-full">
+                    <SortControl
+                      headers={columnFilteredData.headers}
+                      sortColumn={sortColumn}
+                      onSortColumnChange={setSortColumn}
+                      sortDirection={sortDirection}
+                      onSortDirectionChange={setSortDirection}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
         )}
 
