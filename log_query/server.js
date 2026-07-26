@@ -5,6 +5,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { homedir } from 'node:os';
+import { ALLOWED_TIME_ZONES, parseQueryTime } from './time.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -139,26 +140,12 @@ function parseNDJSONLines(text) {
   return { columns, rows };
 }
 
-function parseRelativeTime(value) {
-  const relMatch = value.match(/^now(-(\d+)(m|h|d))?$/);
-  if (relMatch) {
-    const now = new Date();
-    if (relMatch[1]) {
-      const amount = parseInt(relMatch[2], 10);
-      const unit = relMatch[3];
-      const ms = unit === 'm' ? amount * 60000 : unit === 'h' ? amount * 3600000 : amount * 86400000;
-      return new Date(now.getTime() - ms);
-    }
-    return now;
-  }
-  return new Date(value);
-}
-
 function validateInput(body) {
   const {
     environment = 'production', namespace = '', searchField = 'extracted.uuid',
     searchOperator = '=', searchValue = '', severity = '',
-    start = 'now-1h', end = 'now', limit = 200, logFamily = 'container_logs',
+    start = 'now-1h', end = 'now', timeZone = 'America/Los_Angeles',
+    limit = 200, logFamily = 'container_logs',
   } = body ?? {};
 
   if (!ALLOWED_ENVIRONMENTS.has(environment)) return { error: `Invalid environment: ${environment}` };
@@ -169,11 +156,18 @@ function validateInput(body) {
   if (severity && !ALLOWED_SEVERITIES.has(severity)) return { error: `Invalid severity: ${severity}` };
   if (!SAFE_TIME_RE.test(start)) return { error: `Invalid start time: ${start}` };
   if (!SAFE_TIME_RE.test(end)) return { error: `Invalid end time: ${end}` };
+  if (!ALLOWED_TIME_ZONES.has(timeZone)) return { error: `Invalid timezone: ${timeZone}` };
+  try {
+    parseQueryTime(start, timeZone);
+    parseQueryTime(end, timeZone);
+  } catch (error) {
+    return { error: error.message };
+  }
   const limitNum = parseInt(String(limit), 10);
   if (isNaN(limitNum) || limitNum < 0 || limitNum > 10000) return { error: 'limit must be 0-10000.' };
   if (!['container_logs', 'istio'].includes(logFamily)) return { error: `Invalid logFamily: ${logFamily}` };
 
-  return { environment, namespace, searchField, searchOperator, searchValue, severity, start, end, limitNum, logFamily };
+  return { environment, namespace, searchField, searchOperator, searchValue, severity, start, end, timeZone, limitNum, logFamily };
 }
 
 // ---------------------------------------------------------------------------
@@ -181,7 +175,7 @@ function validateInput(body) {
 // ---------------------------------------------------------------------------
 
 async function queryViaGateway(params) {
-  const { environment, logFamily, start, end, limitNum } = params;
+  const { environment, logFamily, start, end, timeZone, limitNum } = params;
   const query = buildLogProcQLQuery(params);
   const token = getGatewayToken(environment);
   if (!token) throw new Error(`No gateway token found in ~/.netrc for ${environment}. Run: css auth login`);
@@ -190,8 +184,8 @@ async function queryViaGateway(params) {
   const path = LOGPROC_PATHS[logFamily] ?? LOGPROC_PATHS.container_logs;
   const url = gatewayBase + path;
 
-  const minTime = parseRelativeTime(start).toISOString();
-  const maxTime = parseRelativeTime(end).toISOString();
+  const minTime = parseQueryTime(start, timeZone).toISOString();
+  const maxTime = parseQueryTime(end, timeZone).toISOString();
   const family = logFamily === 'istio' ? 'istio' : 'container_logs';
 
   const controller = new AbortController();
@@ -226,12 +220,14 @@ async function queryViaGateway(params) {
 // ---------------------------------------------------------------------------
 
 async function queryViaCLI(params) {
-  const { logFamily, start, end, limitNum } = params;
+  const { logFamily, start, end, timeZone, limitNum } = params;
   const query = buildLogProcQLQuery(params);
 
   const args = ['logs', 'logproc'];
   if (logFamily === 'istio') args.push('-f', 'istio');
-  args.push(query, '-s', start, '-e', end, '-l', String(limitNum), '--format', 'json', '--no-color');
+  const normalizedStart = parseQueryTime(start, timeZone).toISOString();
+  const normalizedEnd = parseQueryTime(end, timeZone).toISOString();
+  args.push(query, '-s', normalizedStart, '-e', normalizedEnd, '-l', String(limitNum), '--format', 'json', '--no-color');
 
   const { stdout, stderr } = await execFileAsync('css', args, {
     cwd: MONOREPO_ROOT,

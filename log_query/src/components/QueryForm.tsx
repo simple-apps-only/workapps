@@ -9,6 +9,7 @@ export interface QueryParams {
   severity: string;
   start: string;
   end: string;
+  timeZone: string;
   limit: number;
   logFamily: string;
 }
@@ -76,7 +77,7 @@ function buildCliPreview(params: QueryParams): string {
   if (params.severity) parts.push(`"payload.json.severity"="${params.severity}"`);
   const query = `{${parts.join(', ')}}`;
   const familyFlag = params.logFamily === 'istio' ? ' -f istio' : '';
-  return `css logs logproc${familyFlag} '${query}' -s '${params.start}' -e '${params.end}' -l ${params.limit} --format json`;
+  return `TZ='${params.timeZone}' css logs logproc${familyFlag} '${query}' -s '${params.start}' -e '${params.end}' -l ${params.limit} --format json`;
 }
 
 const selectClass =
@@ -116,6 +117,7 @@ export default function QueryForm({ onQuery, loading }: Props) {
   const [customStart, setCustomStart] = usePersisted('customStart', '');
   const [customEnd, setCustomEnd] = usePersisted('customEnd', '');
   const [useCustomTime, setUseCustomTime] = usePersisted('useCustomTime', false);
+  const [timeZone, setTimeZone] = usePersisted('timeZone', 'America/Los_Angeles');
   const [limit, setLimit] = usePersisted('limit', 200);
   const [logFamily, setLogFamily] = usePersisted('logFamily', 'container_logs');
   const [showCli, setShowCli] = useState(false);
@@ -123,7 +125,8 @@ export default function QueryForm({ onQuery, loading }: Props) {
   const searchType = SEARCH_TYPES[searchTypeIdx]!;
 
   const params: QueryParams = useMemo(() => {
-    const formatDateTime = (dt: string) => dt && !dt.includes(':00') ? `${dt}:00` : (dt || 'now-1h');
+    const formatDateTime = (dt: string, fallback: string) =>
+      dt ? (dt.length === 16 ? `${dt}:00` : dt) : fallback;
     return {
       environment,
       namespace,
@@ -131,12 +134,13 @@ export default function QueryForm({ onQuery, loading }: Props) {
       searchOperator: searchType.operator,
       searchValue,
       severity,
-      start: useCustomTime ? formatDateTime(customStart) : timePreset,
-      end: useCustomTime ? customEnd ? `${customEnd}:00` : 'now' : 'now',
+      start: useCustomTime ? formatDateTime(customStart, 'now-1h') : timePreset,
+      end: useCustomTime ? formatDateTime(customEnd, 'now') : 'now',
+      timeZone,
       limit,
       logFamily,
     };
-  }, [environment, namespace, searchType, searchValue, severity, useCustomTime, customStart, customEnd, timePreset, limit, logFamily]);
+  }, [environment, namespace, searchType, searchValue, severity, useCustomTime, customStart, customEnd, timePreset, timeZone, limit, logFamily]);
 
   const cliPreview = useMemo(() => buildCliPreview(params), [params]);
 
@@ -255,6 +259,15 @@ export default function QueryForm({ onQuery, loading }: Props) {
         >
           {useCustomTime ? 'Presets' : 'Custom'}
         </button>
+        <select
+          value={timeZone}
+          onChange={(e) => setTimeZone(e.target.value)}
+          className={selectClass}
+          title="Timezone used for custom start and end times"
+        >
+          <option value="America/Los_Angeles">Pacific (PST/PDT)</option>
+          <option value="UTC">UTC</option>
+        </select>
 
         {/* Limit */}
         <input
